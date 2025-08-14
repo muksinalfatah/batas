@@ -1,0 +1,68 @@
+[
+    {
+        "Kode": "31",
+        "Nama": "DKI JAKARTA",
+        "Ibukota": "",
+        "Keterangan": "",
+        "JumlahPenduduk": 590810,
+        "flagPindah": "0",
+        "jumlahKab": 14,
+        "jumlahKec": 100,
+        "jumlahKel": 629
+    },
+    {
+        "Kode": "32",
+        "Nama": "JAWA BARAT",
+        "Ibukota": "",
+        "Keterangan": "",
+        "JumlahPenduduk": 527554,
+        "flagPindah": "0",
+        "jumlahKab": 13,
+        "jumlahKec": 100,
+        "jumlahKel": 704
+    },
+    {
+        "Kode": "33",
+        "Nama": "JAWA TENGAH",
+        "Ibukota": "",
+        "Keterangan": "",
+        "JumlahPenduduk": 629556,
+        "flagPindah": "0",
+        "jumlahKab": 5,
+        "jumlahKec": 100,
+        "jumlahKel": 609
+    },
+    {
+        "Kode": "34",
+        "Nama": "DI YOGYAKARTA",
+        "Ibukota": "",
+        "Keterangan": "",
+        "JumlahPenduduk": 519973,
+        "flagPindah": "0",
+        "jumlahKab": 9,
+        "jumlahKec": 100,
+        "jumlahKel": 858
+    },
+    {
+        "Kode": "35",
+        "Nama": "JAWA TIMUR",
+        "Ibukota": "",
+        "Keterangan": "",
+        "JumlahPenduduk": 466701,
+        "flagPindah": "0",
+        "jumlahKab": 6,
+        "jumlahKec": 100,
+        "jumlahKel": 395
+    },
+    {
+        "Kode": "36",
+        "Nama": "BANTEN",
+        "Ibukota": "",
+        "Keterangan": "",
+        "JumlahPenduduk": 101938,
+        "flagPindah": "0",
+        "jumlahKab": 12,
+        "jumlahKec": 100,
+        "jumlahKel": 330
+    }
+]

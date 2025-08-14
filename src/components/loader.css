@@ -1,0 +1,29 @@
+.loader-inner {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.loader-content {
+    padding: 1vw;
+    
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    border-width: 5px;
+    border-color: rgba(255, 255, 255, 0.05);
+    border-top-color: #000000;
+    animation: spin 1s infinite linear;
+    border-radius: 100%;
+    border-style: solid;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

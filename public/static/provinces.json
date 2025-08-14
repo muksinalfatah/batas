@@ -1,0 +1,47 @@
+{
+    "code": "200",
+    "message": "Successfull",
+    "data": [
+        {
+            "Kode": "11",
+            "Nama": "ACEH",
+            "Ibukota": "BANDA ACEH",
+            "LuasWilayah": 56834.746,
+            "JumlahPenduduk": 5379937,
+			"Keterangan":"ket 1"
+        },
+        {
+            "Kode": "12",
+            "Nama": "SUMATERA UTARA",
+            "Ibukota": "MEDAN",
+            "LuasWilayah": 72460.743999999977,
+            "JumlahPenduduk": 15305230,
+			"Keterangan":"ket 1"
+        },
+        {
+            "Kode": "13",
+            "Nama": "SUMATERA BARAT",
+            "Ibukota": "PADANG",
+            "LuasWilayah": 42119.542000000009,
+            "JumlahPenduduk": 5624143,
+			"Keterangan":"ket 1"
+        },
+        {
+            "Kode": "14",
+            "Nama": "RIAU",
+            "Ibukota": "PEKANBARU",
+            "LuasWilayah": 89935.896,
+            "JumlahPenduduk": 6646390,
+			"Keterangan":"ket 1"
+        },
+        {
+            "Kode": "15",
+            "Nama": "JAMBI",
+            "Ibukota": "JAMBI",
+            "LuasWilayah": 49026.579,
+            "JumlahPenduduk": 3642763,
+			"Keterangan":"ket 1"
+        }
+    ],
+    "reference": "KEPUTUSAN MENTERI DALAM NEGERI NOMOR 100.1.1-6117 TAHUN 2022, Luas wilayah bersumber dari Badan Informasi Geospasial, Jumlah penduduk bersumber dari Ditjen Kependudukan dan Pencatatan Sipil Kemendagri (Data Kependudukan Semester I Bulan Juni Tahun 2022)"
+}
