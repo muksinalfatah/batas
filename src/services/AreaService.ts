@@ -294,8 +294,8 @@ class AreaBoundaryService implements IAreaService {
     private async authenticate() {
         const response = await fetch(`${this.BASE_URL}kode-wap/token`, {
             headers: {
-                TimeStamp: '2024-05-08T07:00:00Z',
-                PartnerKey: 'b9PDmCSkUIDAUn5BvG8PlBbAnGiaEEW1/RmVbxBTs38=',
+                TimeStamp: '2025-08-14T07:00:00Z',
+                PartnerKey: '7Fp7vmRaitWL8eusO2/n1DHgRYBudCubn1FDP7zbBHc=',
                 PartnerName: 'kpuid'
             }
         });
