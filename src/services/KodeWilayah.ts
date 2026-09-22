@@ -11,8 +11,8 @@ export class KodeWilayah implements IAreaService {
     private async authenticate() {
         const response = await fetch(`${this.BASE_URL}kode-wap/token`, {
             headers: {
-                TimeStamp: '2026-09-22T14:20:00Z',
-                PartnerKey: 'osXCH4+1YeadH1rs0E8aNRwliSCEURartOeLHPETbKU=',
+                TimeStamp: '2026-09-22T14:30:00Z',
+                PartnerKey: 'qH5mfI/rorPvdYuSy5V+EWHTloOJhhqP2z968kz3uYE=',
                 PartnerName: 'kpuid'
             }
         });
