@@ -68,7 +68,9 @@ export const useMapFunction = (areaService: IAreaService) => {
         : hoveredArea;
 
     const showHoverInfo = (feature: MapGeoJSONFeature, x: number, y: number) => {
-        if (feature.layer.id === "provinces") {
+        if (feature.properties?.STSBTS != null) {
+            send({ type: "HOVER_BOUNDARY", feature, x, y });
+        } else if (feature.layer.id === "provinces") {
             send({ type: "HOVER", feature, x, y });
         } else {
             send({ type: "HOVER_REGENCY", feature, x, y })

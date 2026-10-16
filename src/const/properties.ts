@@ -65,6 +65,16 @@ const KLBADM_MAP = new Map([
 
 export const PROPERTIES_MAPPING = [
     {
+        key: "STSBTS",
+        label: "Status Batas",
+        render: (value: string) => STSBTS_MAP.get(value.toString()) ?? value,
+    },
+    {
+        key: "UUPP",
+        label: "Referensi Peraturan",
+        render: (value: string) => value,
+    },
+    {
         key: "RuleID",
         label: "Rule ID",
         render: (value: string) => RULE_ID_MAP.get(value.toString()) ?? value,
@@ -95,7 +105,7 @@ export const PROPERTIES_MAPPING = [
         render: (value: string) => value,
     },
     {
-        key: "KARKTR",
+        key: "KRKTR",
         label: "Karakteristik Batas",
         render: (value: string) => KARKTR_MAP.get(value.toString()) ?? value,
     },
@@ -107,16 +117,6 @@ export const PROPERTIES_MAPPING = [
     {
         key: "PJGBTS",
         label: "Panjang Batas",
-        render: (value: string) => value,
-    },
-    {
-        key: "STSBTS",
-        label: "Status Batas",
-        render: (value: string) => STSBTS_MAP.get(value.toString()) ?? `Lainnya (${value})`,
-    },
-    {
-        key: "UUPP",
-        label: "Referensi Peraturan",
         render: (value: string) => value,
     },
     {

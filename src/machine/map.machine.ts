@@ -20,6 +20,7 @@ export const mapMachine = setup({
             | { type: "HOVER", feature: GeoJSON.Feature, x: number, y: number }
             | { type: "CLICK", provinceCode: string, feature: GeoJSON.Feature }
             | { type: "HOVER_REGENCY", feature: GeoJSON.Feature, x: number, y: number }
+            | { type: "HOVER_BOUNDARY", feature: GeoJSON.Feature, x: number, y: number }
             | { type: "CLEAR_HOVER" }
             | { type: "CLEAR_SELECTED" },
         input: {} as {
@@ -88,8 +89,8 @@ export const mapMachine = setup({
         setHoverInfo: assign(({ event, context }) => {
             let hoveredArea = null;
 
-            if (event.type === "HOVER" || event.type === "HOVER_REGENCY") {
-                const featureInfo = event.feature.properties ? context.areas.get(event.feature.properties["Kode"] ?? "") : null;
+            if (event.type === "HOVER" || event.type === "HOVER_REGENCY" || event.type === "HOVER_BOUNDARY") {
+                const featureInfo = event.type !== "HOVER_BOUNDARY" && event.feature.properties ? context.areas.get(event.feature.properties["Kode"] ?? "") : null;
 
                 hoveredArea = {
                     info: featureInfo ?? null,
@@ -157,7 +158,7 @@ export const mapMachine = setup({
                 HOVER: {
                     actions: "setHoverInfo"
                 },
-                HOVER_REGENCY: {
+                HOVER_BOUNDARY: {
                     actions: "setHoverInfo"
                 },
                 CLICK: {

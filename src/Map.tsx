@@ -23,7 +23,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
         && BOUNDARY_PROVINCE_CODES.includes(selectedProvinceCode);
 
     const onHover = (event: MapLayerMouseEvent) => {
-        const hoveredFeature = event.features?.find(feature => feature.layer.id === "area-boundaries-line")
+        const hoveredFeature = event.features?.find(feature => feature.layer.id === "area-boundaries-hit")
             ?? event.features?.[0];
         const point = event.lngLat;
         if (hoveredFeature) {
@@ -34,7 +34,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
     }
 
     const onClick = (event: MapLayerMouseEvent) => {
-        const clickedFeature = event.features && event.features[0];
+        const clickedFeature = event.features?.find(feature => feature.layer.id === "regencies" || feature.layer.id === "provinces");
         if (clickedFeature) {
             if (clickedFeature.layer.id === "provinces") {
                 const code = String(clickedFeature.properties["Kode"]);
@@ -92,7 +92,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                 initialViewState={DEFAULT_VIEW_STATE}
                 mapStyle={OSM_MAP}
                 interactiveLayerIds={mode === MapMode.AREA
-                    ? ["provinces", "regencies", ...(showBoundaryOverlay ? ["area-boundaries-line"] : [])]
+                    ? ["provinces", "regencies", ...(showBoundaryOverlay ? ["area-boundaries-hit"] : [])]
                     : ["provinces", ...regenciesGeoJson.features.map((_, index) => `${index}-line`)]}
                 onMouseMove={onHover}
                 onClick={onClick}
@@ -186,6 +186,11 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                         type="geojson"
                         data={`${import.meta.env.BASE_URL}geojson/batas/${selectedProvinceCode}.geojson`}
                     >
+                        <Layer id="area-boundaries-hit" type="line" paint={{
+                            "line-color": "black",
+                            "line-width": 16,
+                            "line-opacity": 0,
+                        }} />
                         <Layer id="area-boundaries-outline" type="line" paint={{
                             "line-color": "white",
                             "line-width": 5,
