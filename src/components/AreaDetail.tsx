@@ -42,6 +42,7 @@ function AreaDetail({ Kode, Nama, Ibukota, LuasWilayah, JumlahPenduduk, Keterang
                         </Text>
                     </Group>
                     <Divider />
+                    {!isKab() && <>
                     <Group justify='space-between'>
                         <Text size="sm">Jumlah Kabupaten</Text>
                         <Text size="sm">
@@ -55,6 +56,7 @@ function AreaDetail({ Kode, Nama, Ibukota, LuasWilayah, JumlahPenduduk, Keterang
                             <Text size="sm"><NumberFormatter thousandSeparator value={jumlahKota} /></Text>
                         </Group>
                         <Divider />
+                    </>}
                     </>}
                     <Group justify='space-between'>
                         <Text size="sm">Jumlah Kecamatan</Text>

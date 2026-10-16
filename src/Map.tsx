@@ -197,7 +197,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                             }}
                         >
                             {renderHoverInfo}
-                            {hoverDetailLoading && <Text size="xs" p="xs">Memuat detail provinsi…</Text>}
+                            {hoverDetailLoading && <Text size="xs" p="xs">Memuat detail wilayah…</Text>}
                             {hoverDetailError && <Text size="xs" c="red" p="xs">{hoverDetailError}</Text>}
                         </Popup>
                     )

@@ -41,27 +41,28 @@ export const useMapFunction = (areaService: IAreaService) => {
     const provincesGeoJson = snapshot.context.provinces;
     const regenciesGeoJson = snapshot.context.regencies;
     const hoveredArea = snapshot.context.hoveredArea;
-    const hoverCode = String(hoveredArea?.info?.Kode ?? hoveredArea?.properties?.Kode ?? "");
-    const provinceCode = hoverCode.length === 2 ? hoverCode : "";
-    const [provinceDetail, setProvinceDetail] = useState<{
+    const hoverCode = String(hoveredArea?.info?.Kode ?? hoveredArea?.properties?.Kode ?? "").trim();
+    const getDetail = /^\d{2}$/.test(hoverCode) ? areaService.getProvinceDetail
+        : /^\d{2}\.\d{2}$/.test(hoverCode) ? areaService.getRegencyDetail : undefined;
+    const [areaDetail, setAreaDetail] = useState<{
         code: string; area?: Area; loading: boolean; error?: string;
     }>({ code: "", loading: false });
 
     useEffect(() => {
-        if (!provinceCode || !areaService.getProvinceDetail) return;
+        if (!hoverCode || !getDetail) return;
         let active = true;
-        setProvinceDetail({ code: provinceCode, loading: true });
+        setAreaDetail({ code: hoverCode, loading: true });
         const timer = setTimeout(() => {
-            areaService.getProvinceDetail!(provinceCode).then(area => {
-                if (active) setProvinceDetail({ code: provinceCode, area, loading: false });
+            getDetail.call(areaService, hoverCode).then(area => {
+                if (active) setAreaDetail({ code: hoverCode, area, loading: false });
             }).catch(() => {
-                if (active) setProvinceDetail({ code: provinceCode, loading: false, error: "Detail provinsi gagal dimuat. Arahkan kembali kursor untuk mencoba lagi." });
+                if (active) setAreaDetail({ code: hoverCode, loading: false, error: "Detail wilayah gagal dimuat. Arahkan kembali kursor untuk mencoba lagi." });
             });
         }, 150);
         return () => { active = false; clearTimeout(timer); };
-    }, [areaService, provinceCode]);
+    }, [areaService, hoverCode, getDetail]);
 
-    const currentDetail = provinceDetail.code === provinceCode ? provinceDetail : undefined;
+    const currentDetail = areaDetail.code === hoverCode ? areaDetail : undefined;
     const enrichedHover = hoveredArea && currentDetail?.area
         ? { ...hoveredArea, info: { ...hoveredArea.info, ...currentDetail.area } }
         : hoveredArea;
@@ -92,8 +93,8 @@ export const useMapFunction = (areaService: IAreaService) => {
         error: snapshot.context.error,
         provincesGeoJson,
         hoveredArea: enrichedHover,
-        hoverDetailLoading: Boolean(provinceCode && areaService.getProvinceDetail && (!currentDetail || currentDetail.loading)),
-        hoverDetailError: provinceCode ? currentDetail?.error : undefined,
+        hoverDetailLoading: Boolean(getDetail && (!currentDetail || currentDetail.loading)),
+        hoverDetailError: getDetail ? currentDetail?.error : undefined,
         regenciesGeoJson,
 
         showHoverInfo,

@@ -3,22 +3,30 @@ import { Area } from "../types";
 import { IAreaService } from "../types/services";
 
 export class KodeWilayah implements IAreaService {
-    private provinceDetails = new Map<string, Promise<Area>>();
+    private areaDetails = new Map<string, Promise<Area>>();
 
     getProvinceDetail(provinceCode: string): Promise<Area> {
-        const cached = this.provinceDetails.get(provinceCode);
+        return this.getAreaDetail(provinceCode);
+    }
+
+    getRegencyDetail(regencyCode: string): Promise<Area> {
+        return this.getAreaDetail(regencyCode);
+    }
+
+    private getAreaDetail(areaCode: string): Promise<Area> {
+        const cached = this.areaDetails.get(areaCode);
         if (cached) return cached;
-        const request = this.fetchProvinceDetail(provinceCode).catch(error => {
-            this.provinceDetails.delete(provinceCode);
+        const request = this.fetchAreaDetail(areaCode).catch(error => {
+            this.areaDetails.delete(areaCode);
             throw error;
         });
-        this.provinceDetails.set(provinceCode, request);
+        this.areaDetails.set(areaCode, request);
         return request;
     }
 
-    private async fetchProvinceDetail(provinceCode: string): Promise<Area> {
+    private async fetchAreaDetail(areaCode: string): Promise<Area> {
         if (!this.token) await this.authenticate();
-        const url = `${this.BASE_URL}kode-wap/data/2.0.0/${encodeURIComponent(provinceCode)}`;
+        const url = `${this.BASE_URL}kode-wap/data/2.0.0/${encodeURIComponent(areaCode)}`;
         const fetchDetail = () => fetch(url, {
             signal: AbortSignal.timeout(5000),
             headers: { Authorization: `Bearer ${this.token}` },
@@ -29,12 +37,12 @@ export class KodeWilayah implements IAreaService {
             await this.authenticate();
             response = await fetchDetail();
         }
-        if (!response.ok) throw new Error(`Detail provinsi: HTTP ${response.status}`);
+        if (!response.ok) throw new Error(`Detail wilayah: HTTP ${response.status}`);
         const body = await response.json();
         const detail = Array.isArray(body.data)
-            ? body.data.find((area: { KodeWap?: string }) => String(area.KodeWap) === provinceCode)
+            ? body.data.find((area: { KodeWap?: string }) => String(area.KodeWap) === areaCode)
             : undefined;
-        if (!detail) throw new Error("Detail provinsi tidak tersedia");
+        if (!detail) throw new Error("Detail wilayah tidak tersedia");
         const number = (value: unknown): number | undefined => {
             if (value == null || value === "") return undefined;
             const result = Number(value);
