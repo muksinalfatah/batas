@@ -45,9 +45,6 @@ function App() {
                   <Tabs.Tab value="area-code" >
                     Peta Kode Wilayah
                   </Tabs.Tab>
-                  <Tabs.Tab value="area-boundry" >
-                    Peta Batas
-                  </Tabs.Tab>
                 </Tabs.List>
                 <Select
                   label="Versi"
