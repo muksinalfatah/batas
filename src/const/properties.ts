@@ -95,7 +95,7 @@ export const PROPERTIES_MAPPING = [
         render: (value: string) => value,
     },
     {
-        key: "KRKTR",
+        key: "KARKTR",
         label: "Karakteristik Batas",
         render: (value: string) => KARKTR_MAP.get(value.toString()) ?? value,
     },
@@ -112,7 +112,7 @@ export const PROPERTIES_MAPPING = [
     {
         key: "STSBTS",
         label: "Status Batas",
-        render: (value: string) => STSBTS_MAP.get(value.toString()) ?? value,
+        render: (value: string) => STSBTS_MAP.get(value.toString()) ?? `Lainnya (${value})`,
     },
     {
         key: "UUPP",

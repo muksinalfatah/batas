@@ -23,7 +23,8 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
         && BOUNDARY_PROVINCE_CODES.includes(selectedProvinceCode);
 
     const onHover = (event: MapLayerMouseEvent) => {
-        const hoveredFeature = event.features?.[0];
+        const hoveredFeature = event.features?.find(feature => feature.layer.id === "area-boundaries-line")
+            ?? event.features?.[0];
         const point = event.lngLat;
         if (hoveredFeature) {
             showHoverInfo(hoveredFeature, point.lat, point.lng);
@@ -90,7 +91,9 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                 ref={mapRef}
                 initialViewState={DEFAULT_VIEW_STATE}
                 mapStyle={OSM_MAP}
-                interactiveLayerIds={mode === MapMode.AREA ? ["provinces", "regencies"] : ["provinces", ...regenciesGeoJson.features.map((_, index) => `${index}-line`)]}
+                interactiveLayerIds={mode === MapMode.AREA
+                    ? ["provinces", "regencies", ...(showBoundaryOverlay ? ["area-boundaries-line"] : [])]
+                    : ["provinces", ...regenciesGeoJson.features.map((_, index) => `${index}-line`)]}
                 onMouseMove={onHover}
                 onClick={onClick}
             >

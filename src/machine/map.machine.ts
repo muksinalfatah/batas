@@ -157,6 +157,9 @@ export const mapMachine = setup({
                 HOVER: {
                     actions: "setHoverInfo"
                 },
+                HOVER_REGENCY: {
+                    actions: "setHoverInfo"
+                },
                 CLICK: {
                     target: ".regenciesLoading",
                     actions: [
