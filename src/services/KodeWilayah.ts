@@ -1,8 +1,24 @@
-import { GEO_JSON_BASE_URL } from "../const/config";
+import { getLocalProvinces, getLocalRegencies, readLocalGeoJson } from "./localGeoJson";
 import { Area } from "../types";
 import { IAreaService } from "../types/services";
 
 export class KodeWilayah implements IAreaService {
+
+    async getProvinces() {
+        try { return await this.getApiProvinces(); }
+        catch (error) {
+            console.warn('API provinsi gagal; memakai daftar GeoJSON lokal.', error);
+            return getLocalProvinces();
+        }
+    }
+
+    async getRegencies(provinceCode: string) {
+        try { return await this.getApiRegencies(provinceCode); }
+        catch (error) {
+            console.warn('API kabupaten gagal; memakai properti GeoJSON lokal.', error);
+            return getLocalRegencies(provinceCode);
+        }
+    }
 
     BASE_URL = import.meta.env.VITE_AREA_SERVICE_BASE_URL as string;
 
@@ -10,22 +26,26 @@ export class KodeWilayah implements IAreaService {
 
     private async authenticate() {
         const response = await fetch(`${this.BASE_URL}kode-wap/token`, {
+            signal: AbortSignal.timeout(5000),
             headers: {
-                TimeStamp: '2026-09-22T14:30:00Z',
-                PartnerKey: 'qH5mfI/rorPvdYuSy5V+EWHTloOJhhqP2z968kz3uYE=',
-                PartnerName: 'kpuid'
+                TimeStamp: '2026-10-16T07:20:00Z',
+                PartnerKey: 'FHbW102IyYqVspOqVaRKfAxZeHL1v7anE+ReWov/a1o=',
+                PartnerName: 'adwilapi'
             }
         });
+        if (!response.ok) throw new Error(`Autentikasi: HTTP ${response.status}`);
         const data = await response.json();
+        if (!data.token) throw new Error('Token API wilayah tidak tersedia');
         this.token = data.token;
     }
 
-    async getProvinces(): Promise<{ data: Area[]; reference: string; }> {
+    private async getApiProvinces(): Promise<{ data: Area[]; reference: string; }> {
         if (!this.token) {
             await this.authenticate();
         }
 
         const response = await fetch(`${this.BASE_URL}api/KodeWilayah/Provinsi`, {
+            signal: AbortSignal.timeout(5000),
             method: "POST",
             headers: {
                 Authorization: `Bearer ${this.token}`
@@ -33,10 +53,11 @@ export class KodeWilayah implements IAreaService {
         });
 
         if (response.status === 401) {
-            await this.authenticate();
-            return this.getProvinces();
+            this.token = null;
+            throw new Error("API wilayah menolak autentikasi");
         }
 
+        if (!response.ok) throw new Error(`API wilayah: HTTP ${response.status}`);
         const body = await response.json();
 
         const areas: Area[] = body.data.map((area: any) => ({
@@ -52,16 +73,16 @@ export class KodeWilayah implements IAreaService {
     }
 
     async getProvinceGeoJson(provinceCode: string): Promise<GeoJSON.FeatureCollection> {
-        return fetch(`${GEO_JSON_BASE_URL}/kode-wilayah/provinces/${provinceCode}.json`)
-            .then(res => res.json());
+        return readLocalGeoJson(`provinces/${provinceCode}.json`);
     }
 
-    async getRegencies(provinceCode: string): Promise<{ data: Area[]; reference: string; }> {
+    private async getApiRegencies(provinceCode: string): Promise<{ data: Area[]; reference: string; }> {
         if (!this.token) {
             await this.authenticate();
         }
 
         const response = await fetch(`${this.BASE_URL}api/KodeWilayah/Kabupaten`, {
+            signal: AbortSignal.timeout(5000),
             method: "POST",
             body: JSON.stringify({ KodeWilayah: provinceCode }),
             headers: {
@@ -71,10 +92,11 @@ export class KodeWilayah implements IAreaService {
         });
 
         if (response.status === 401) {
-            await this.authenticate();
-            return this.getProvinces();
+            this.token = null;
+            throw new Error("API wilayah menolak autentikasi");
         }
 
+        if (!response.ok) throw new Error(`API wilayah: HTTP ${response.status}`);
         const body = await response.json();
 
         const areas: Area[] = body.data.map((area: any) => ({
@@ -90,7 +112,7 @@ export class KodeWilayah implements IAreaService {
     }
 
     async getRegenciesGeoJson(proviceCode: string): Promise<GeoJSON.FeatureCollection> {
-        return fetch(`${GEO_JSON_BASE_URL}/kode-wilayah/regencies/${proviceCode}_2.json`).then(res => res.json())
+        return readLocalGeoJson(`regencies/${proviceCode}_2.json`);
     }
 
 }

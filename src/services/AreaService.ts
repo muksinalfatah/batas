@@ -1,4 +1,4 @@
-import { GEO_JSON_BASE_URL, STATIC_FILE_BASE_URL } from "../const/config";
+import { KODE_WILAYAH_GEO_JSON_BASE_URL, STATIC_FILE_BASE_URL } from "../const/config";
 import { Area } from "../types"
 import { IAreaService } from "../types/services";
 import { faker } from '@faker-js/faker';
@@ -10,7 +10,7 @@ export class AreaService implements IAreaService {
     }
 
     async getProvinceGeoJson(provinceCode: string): Promise<GeoJSON.FeatureCollection> {
-        return fetch(`${GEO_JSON_BASE_URL}/kode-wilayah/provinces/${provinceCode}.json`).then(res => res.json())
+        return fetch(`${KODE_WILAYAH_GEO_JSON_BASE_URL}/provinces/${provinceCode}.json`).then(res => res.json())
     }
 
     async getRegencies(provinceCode: string): Promise<{ data: Area[]; reference: string; }> {
@@ -39,7 +39,7 @@ export class AreaService implements IAreaService {
     }
 
     async getRegenciesGeoJson(proviceCode: string): Promise<GeoJSON.FeatureCollection> {
-        return fetch(`${GEO_JSON_BASE_URL}/kode-wilayah/regencies/${proviceCode}_2.json`).then(res => res.json())
+        return fetch(`${KODE_WILAYAH_GEO_JSON_BASE_URL}/regencies/${proviceCode}_2.json`).then(res => res.json())
     }
 }
 
@@ -294,9 +294,9 @@ class AreaBoundaryService implements IAreaService {
     private async authenticate() {
         const response = await fetch(`${this.BASE_URL}kode-wap/token`, {
             headers: {
-                TimeStamp: '2026-09-22T14:30:00Z',
-                PartnerKey: 'qH5mfI/rorPvdYuSy5V+EWHTloOJhhqP2z968kz3uYE=',
-                PartnerName: 'kpuid'
+                TimeStamp: '2026-10-16T07:20:00Z',
+                PartnerKey: 'FHbW102IyYqVspOqVaRKfAxZeHL1v7anE+ReWov/a1o=',
+                PartnerName: 'adwilapi'
             }
         });
         const data = await response.json();
@@ -335,7 +335,7 @@ class AreaBoundaryService implements IAreaService {
     }
 
     async getProvinceGeoJson(provinceCode: string): Promise<GeoJSON.FeatureCollection> {
-        return fetch(`${GEO_JSON_BASE_URL}/kode-wilayah/provinces/${provinceCode}.json`)
+        return fetch(`${KODE_WILAYAH_GEO_JSON_BASE_URL}/provinces/${provinceCode}.json`)
             .then(res => res.json());
     }
 
@@ -373,7 +373,9 @@ class AreaBoundaryService implements IAreaService {
     }
 
     async getRegenciesGeoJson(provinceCode: string): Promise<GeoJSON.FeatureCollection> {
-        const geojson = await fetch(`${GEO_JSON_BASE_URL}/batas/${provinceCode}.geojson`).then(res => res.json())
+        const response = await fetch(`${import.meta.env.BASE_URL}geojson/batas/${provinceCode}.geojson`);
+        if (!response.ok) throw new Error(`GeoJSON batas ${provinceCode}: HTTP ${response.status}`);
+        const geojson = await response.json();
         return geojson;
         
     }
