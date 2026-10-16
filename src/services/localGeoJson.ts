@@ -1,6 +1,7 @@
 import type { Area } from "../types";
+import { KODE_WILAYAH_GEO_JSON_BASE_URL } from "../const/config";
 
-// Provinces available in public/geojson/provinces.
+// Provinces available in public/geojson/kode-wilayah/provinces.
 const provinces: [string, string][] = [
     ["11", "Aceh"],
     ["12", "Sumatera Utara"],
@@ -18,6 +19,28 @@ const provinces: [string, string][] = [
     ["34", "Daerah Istimewa Yogyakarta"],
     ["35", "Jawa Timur"],
     ["36", "Banten"],
+    ["51", "Bali"],
+    ["52", "Nusa Tenggara Barat"],
+    ["53", "Nusa Tenggara Timur"],
+    ["61", "Kalimantan Barat"],
+    ["62", "Kalimantan Tengah"],
+    ["63", "Kalimantan Selatan"],
+    ["64", "Kalimantan Timur"],
+    ["65", "Kalimantan Utara"],
+    ["71", "Sulawesi Utara"],
+    ["72", "Sulawesi Tengah"],
+    ["73", "Sulawesi Selatan"],
+    ["74", "Sulawesi Tenggara"],
+    ["75", "Gorontalo"],
+    ["76", "Sulawesi Barat"],
+    ["81", "Maluku"],
+    ["82", "Maluku Utara"],
+    ["91", "Papua"],
+    ["92", "Papua Barat"],
+    ["93", "Papua Selatan"],
+    ["94", "Papua Tengah"],
+    ["95", "Papua Pegunungan"],
+    ["96", "Papua Barat Daya"],
 ];
 
 function toArea(Kode: string, Nama: string): Area {
@@ -25,10 +48,20 @@ function toArea(Kode: string, Nama: string): Area {
 }
 
 export async function readLocalGeoJson(path: string): Promise<GeoJSON.FeatureCollection> {
-    const url = `${import.meta.env.BASE_URL}geojson/${path}`;
+    const url = `${KODE_WILAYAH_GEO_JSON_BASE_URL}/${path}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error(`GeoJSON lokal ${path}: HTTP ${response.status}`);
     const data = await response.json();
+    if (data?.type === "GeometryCollection" && Array.isArray(data.geometries)) {
+        return {
+            type: "FeatureCollection",
+            features: data.geometries.map((geometry: GeoJSON.Geometry) => ({
+                type: "Feature",
+                geometry,
+                properties: {},
+            })),
+        };
+    }
     if (data?.type !== "FeatureCollection" || !Array.isArray(data.features)) {
         throw new Error(`GeoJSON lokal ${path} tidak valid`);
     }
@@ -54,6 +87,6 @@ export async function getLocalRegencies(provinceCode: string): Promise<{ data: A
     }
     return {
         data: Array.from(areas.values()).sort((a, b) => a.Kode.localeCompare(b.Kode)),
-        reference: `${import.meta.env.BASE_URL}geojson/${path}`,
+        reference: `${KODE_WILAYAH_GEO_JSON_BASE_URL}/${path}`,
     };
 }

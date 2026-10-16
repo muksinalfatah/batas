@@ -7,7 +7,7 @@ import AreaDetail from './components/AreaDetail';
 import { IAreaService } from './types/services';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as turf from "@turf/turf";
-import { Box, Group, Stack, Text, Title } from '@mantine/core';
+import { Alert, Box, Group, Stack, Text, Title } from '@mantine/core';
 import { pointOnFeature } from "@turf/point-on-feature";
 import PropertiesDetail from './components/PropertiesDetail';
 import { useMemo } from 'react';
@@ -18,7 +18,7 @@ export enum MapMode {
 }
 
 function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaService, title?: string, mode?: MapMode }) {
-    const { mapRef, isLoading, provincesGeoJson, hoveredArea, regenciesGeoJson, showHoverInfo, clearHover, selectProvince, clearSelected } = useMapFunction(areaService);
+    const { mapRef, isLoading, error, provincesGeoJson, hoveredArea, regenciesGeoJson, showHoverInfo, clearHover, selectProvince, clearSelected } = useMapFunction(areaService);
 
     const onHover = (event: MapLayerMouseEvent) => {
         const features = mapRef.current?.queryRenderedFeatures(event.point);
@@ -81,6 +81,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
     return (
         <Stack className="map-container">
             {title ? <Title order={3}>{title}</Title> : null}
+            {error && <Alert color="red" title="Data peta gagal dimuat">{error}</Alert>}
             <MapComponent
                 ref={mapRef}
                 initialViewState={DEFAULT_VIEW_STATE}

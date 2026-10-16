@@ -14,6 +14,7 @@ export const mapMachine = setup({
             selectedProvinceCode: string | null;
             hoveredArea: { info: Area | null, properties?: Record<string,string>, x: number, y: number } | null;
             areaService: IAreaService
+            error: string | null;
         },
         events: {} as
             | { type: "HOVER", feature: GeoJSON.Feature, x: number, y: number }
@@ -111,6 +112,7 @@ export const mapMachine = setup({
     /** @xstate-layout N4IgpgJg5mDOIC5QFsCGAHAdASwHbYBcBiAbQAYBdRUdAe1kO1t2pAA9EBGAJgFZMALAE4RQ7mKEB2EWQAcAGhABPLmX6ipQst0mTOkgQIC+RxWix5GqADYAZWqgh4oRCMzA5cAN1oBrD+aeVnYOTrhQCHg+AMaoBEy45BRJrHQM8cysHAi83IoqCABsAMyymIXSvFJkcmSSOiZmGJjoAE60XnjRcPaOkEQAEgDyAGoAogBKKUggaYyZM9lVhZhivLqcnMVknLLFxfmIpZKrosWFFbJkYpKNIIFtHV09of0AwrYAkm8A0tM09HmLEWRx2q04AlqAkkpQExUkhyKm0w3DI22KywEskMsjuD3anVw3VgvQg71sYwAghMAPrDcZTSipQEZYGgJayMqSQr6LFaThkOGFRFaE6yHhwqSFWRnPHNR6E4mk8lU2kAZTGFLeABUxgARf6zFkJLKIdbqTnFTi8HnaKSIyTYwRkHmSNQXbjiW6me7ygnPEmvCCYVpgGBE7AvRzOVzuTw+fyYfFPIlRsnB0Ph6KRwPR8KRby0WKspKGuas01FOEo4pwvYu3j1hHKRCFbgrfRCKpu2r1b1NLAKgPK4ND1NqsDWMDRAj9emTGkTMYAcTGADk3gBNMvGhbsxB7biYPbd2R6HbYg4tnK8YqrW-aT3FbgCAXGO64Whk+AzczM9ImiCCAALTCteoFyhY+AEP+QKVgIeTXm+pwiFsOicEIba8LwkFBPENiks4sEVkBnpkJgjZVOchSCpsGIKNe4qCKINEyo6VpwrhY5KkGxGAfuCB8HeQgQlCMKXtKiICBcggPjy+wCOsMrFFx-qprm6YhmGYARmmREzOW-HsIgCEnDR1qNnaMKCoibYCOUNoQq+h6FNCqkpjxfSjmp3QTlOM6QHxe7GQgewrGFNQ1GeuQVLZ2HOjy0mcpymHeiYQA */
     id: "map",
     context: ({ input }) => ({
+        error: null,
         areas: new Map(),
         provinces: turf.featureCollection([]),
         hoveredArea: null,
@@ -137,11 +139,18 @@ export const mapMachine = setup({
                         }
                     }),
                 },
+                onError: {
+                    target: "loadingFailed",
+                    actions: assign(({ event }) => ({
+                        error: event.error instanceof Error ? event.error.message : "Gagal memuat data provinsi",
+                    })),
+                },
                 input: ({ context }) => ({
                     areaService: context.areaService
                 })
             },
         },
+        loadingFailed: {},
         provincesLoaded: {
             initial: "idle",
             on: {
@@ -152,7 +161,8 @@ export const mapMachine = setup({
                     target: ".regenciesLoading",
                     actions: [
                         assign(({ event }) => ({
-                            selectedProvinceCode: event.provinceCode
+                            selectedProvinceCode: event.provinceCode,
+                            error: null,
                         })),
                         "moveTo"
                     ]
@@ -185,6 +195,12 @@ export const mapMachine = setup({
                                     areas
                                 }
                             }),
+                        },
+                        onError: {
+                            target: "idle",
+                            actions: assign(({ event }) => ({
+                                error: event.error instanceof Error ? event.error.message : "Gagal memuat data kabupaten/kota",
+                            })),
                         },
                         input: ({ context }) => ({
                             provinceCode: context.selectedProvinceCode ?? "",

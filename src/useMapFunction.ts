@@ -64,6 +64,7 @@ export const useMapFunction = (areaService: IAreaService) => {
     return {
         mapRef,
         isLoading,
+        error: snapshot.context.error,
         provincesGeoJson,
         hoveredArea,
         regenciesGeoJson,

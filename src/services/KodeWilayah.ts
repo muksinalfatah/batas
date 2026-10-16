@@ -5,10 +5,18 @@ import { IAreaService } from "../types/services";
 export class KodeWilayah implements IAreaService {
 
     async getProvinces() {
-        try { return await this.getApiProvinces(); }
+        const local = await getLocalProvinces();
+        try {
+            const api = await this.getApiProvinces();
+            const byCode = new Map(api.data.map(area => [area.Kode, area]));
+            return {
+                ...local,
+                data: local.data.map(area => ({ ...area, ...byCode.get(area.Kode) })),
+            };
+        }
         catch (error) {
             console.warn('API provinsi gagal; memakai daftar GeoJSON lokal.', error);
-            return getLocalProvinces();
+            return local;
         }
     }
 
@@ -59,10 +67,14 @@ export class KodeWilayah implements IAreaService {
 
         if (!response.ok) throw new Error(`API wilayah: HTTP ${response.status}`);
         const body = await response.json();
+        if (!Array.isArray(body.data) || body.data.length === 0) {
+            throw new Error("Daftar provinsi API kosong atau tidak valid");
+        }
 
         const areas: Area[] = body.data.map((area: any) => ({
             ...area,
-            flagPindah: area.flagPindah ?? "0",
+            Kode: String(area.Kode ?? area.KodeWilayah ?? "").trim(),
+            flagPindah: String(area.flagPindah ?? "0"),
         }))
 
 
@@ -101,8 +113,8 @@ export class KodeWilayah implements IAreaService {
 
         const areas: Area[] = body.data.map((area: any) => ({
             ...area,
-            Kode: area.KodeWilayah,
-            flagPindah: area.flagPindah ?? "0",
+            Kode: String(area.Kode ?? area.KodeWilayah ?? "").trim(),
+            flagPindah: String(area.flagPindah ?? "0"),
         }))
 
         return {
