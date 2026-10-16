@@ -96,6 +96,7 @@ export const useMapFunction = (areaService: IAreaService) => {
         hoverDetailLoading: Boolean(getDetail && (!currentDetail || currentDetail.loading)),
         hoverDetailError: getDetail ? currentDetail?.error : undefined,
         regenciesGeoJson,
+        selectedProvinceCode: snapshot.context.selectedProvinceCode,
 
         showHoverInfo,
         clearHover,

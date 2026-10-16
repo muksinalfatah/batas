@@ -18,7 +18,9 @@ export enum MapMode {
 }
 
 function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaService, title?: string, mode?: MapMode }) {
-    const { mapRef, isLoading, error, provincesGeoJson, hoveredArea, hoverDetailLoading, hoverDetailError, regenciesGeoJson, showHoverInfo, clearHover, selectProvince, clearSelected } = useMapFunction(areaService);
+    const { mapRef, isLoading, error, provincesGeoJson, hoveredArea, hoverDetailLoading, hoverDetailError, regenciesGeoJson, selectedProvinceCode, showHoverInfo, clearHover, selectProvince, clearSelected } = useMapFunction(areaService);
+    const showBoundaryOverlay = mode === MapMode.AREA && selectedProvinceCode !== null
+        && BOUNDARY_PROVINCE_CODES.includes(selectedProvinceCode);
 
     const onHover = (event: MapLayerMouseEvent) => {
         const hoveredFeature = event.features?.[0];
@@ -174,6 +176,26 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                         })
                 }
 
+                {showBoundaryOverlay && (
+                    <Source
+                        key={selectedProvinceCode}
+                        id={`area-boundaries-${selectedProvinceCode}`}
+                        type="geojson"
+                        data={`${import.meta.env.BASE_URL}geojson/batas/${selectedProvinceCode}.geojson`}
+                    >
+                        <Layer id="area-boundaries-outline" type="line" paint={{
+                            "line-color": "white",
+                            "line-width": 5,
+                            "line-dasharray": [1, 1],
+                        }} />
+                        <Layer id="area-boundaries-line" type="line" paint={{
+                            "line-color": ["match", ["to-number", ["get", "STSBTS"], 999], 1, "green", 2, "blue", 3, "red", "black"],
+                            "line-width": 3,
+                            "line-dasharray": [1, 1],
+                        }} />
+                    </Source>
+                )}
+
                 <Source type='geojson' data={regencyLabelPoints}>
                     <Layer
                         id='regency-label'
@@ -222,7 +244,9 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                             </Box>
                             <Text>Tidak Pindah</Text>
                         </Group>
-                    </Group> :
+                    </Group> : null
+            }
+            {(mode === MapMode.LINE || showBoundaryOverlay) && (
                     <Group>
                         <Box style={{ borderBottom: "4px dashed green" }}>
                             <Text>Status Batas: Referensi Resmi</Text>
@@ -237,7 +261,10 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                             <Text>Status Batas: Lainnya</Text>
                         </Box>
                     </Group>
-            }
+            )}
+            {mode === MapMode.AREA && selectedProvinceCode && !showBoundaryOverlay && (
+                <Text size="sm" c="dimmed">Data garis batas untuk provinsi ini belum tersedia.</Text>
+            )}
         </Stack>
     )
 }
