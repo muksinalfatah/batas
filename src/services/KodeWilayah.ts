@@ -1,6 +1,7 @@
 import { getLocalProvinces, getLocalRegencies, readLocalGeoJson } from "./localGeoJson";
 import { Area } from "../types";
 import { IAreaService } from "../types/services";
+import { createPartnerHeaders } from "./partnerAuth";
 
 export class KodeWilayah implements IAreaService {
     private areaDetails = new Map<string, Promise<Area>>();
@@ -94,13 +95,14 @@ export class KodeWilayah implements IAreaService {
     token: string | null = null;
 
     private async authenticate() {
+        const headers = await createPartnerHeaders(
+            import.meta.env.VITE_AREA_PARTNER_NAME,
+            import.meta.env.VITE_AREA_PARTNER_KEY,
+            import.meta.env.VITE_AREA_PARTNER_SECRET_WORD,
+        );
         const response = await fetch(`${this.BASE_URL}kode-wap/token`, {
             signal: AbortSignal.timeout(5000),
-            headers: {
-                TimeStamp: '2026-10-16T07:20:00Z',
-                PartnerKey: 'FHbW102IyYqVspOqVaRKfAxZeHL1v7anE+ReWov/a1o=',
-                PartnerName: 'adwilapi'
-            }
+            headers,
         });
         if (!response.ok) throw new Error(`Autentikasi: HTTP ${response.status}`);
         const data = await response.json();
