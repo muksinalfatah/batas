@@ -3,6 +3,59 @@ import { Area } from "../types";
 import { IAreaService } from "../types/services";
 
 export class KodeWilayah implements IAreaService {
+    private provinceDetails = new Map<string, Promise<Area>>();
+
+    getProvinceDetail(provinceCode: string): Promise<Area> {
+        const cached = this.provinceDetails.get(provinceCode);
+        if (cached) return cached;
+        const request = this.fetchProvinceDetail(provinceCode).catch(error => {
+            this.provinceDetails.delete(provinceCode);
+            throw error;
+        });
+        this.provinceDetails.set(provinceCode, request);
+        return request;
+    }
+
+    private async fetchProvinceDetail(provinceCode: string): Promise<Area> {
+        if (!this.token) await this.authenticate();
+        const url = `${this.BASE_URL}kode-wap/data/2.0.0/${encodeURIComponent(provinceCode)}`;
+        const fetchDetail = () => fetch(url, {
+            signal: AbortSignal.timeout(5000),
+            headers: { Authorization: `Bearer ${this.token}` },
+        });
+        let response = await fetchDetail();
+        if (response.status === 401) {
+            this.token = null;
+            await this.authenticate();
+            response = await fetchDetail();
+        }
+        if (!response.ok) throw new Error(`Detail provinsi: HTTP ${response.status}`);
+        const body = await response.json();
+        const detail = Array.isArray(body.data)
+            ? body.data.find((area: { KodeWap?: string }) => String(area.KodeWap) === provinceCode)
+            : undefined;
+        if (!detail) throw new Error("Detail provinsi tidak tersedia");
+        const number = (value: unknown): number | undefined => {
+            if (value == null || value === "") return undefined;
+            const result = Number(value);
+            return Number.isFinite(result) ? result : undefined;
+        };
+        const kelurahan = number(detail.JumlahKelurahan);
+        const desa = number(detail.JumlahDesa);
+        return {
+            Kode: String(detail.KodeWap),
+            Nama: detail.NamaWap ?? "",
+            Ibukota: detail.Ibukota ?? "",
+            LuasWilayah: number(detail.LuasWilayah),
+            JumlahPenduduk: number(detail.JumlahPenduduk),
+            jumlahKab: number(detail.JumlahKabupaten),
+            jumlahKota: number(detail.JumlahKota),
+            jumlahKec: number(detail.JumlahKecamatan),
+            jumlahKel: kelurahan == null && desa == null ? undefined : (kelurahan ?? 0) + (desa ?? 0),
+            Keterangan: detail.Pemerintahan?.Peraturan ?? "",
+            flagPindah: String(detail.flagPindah ?? "0"),
+        };
+    }
 
     async getProvinces() {
         const local = await getLocalProvinces();

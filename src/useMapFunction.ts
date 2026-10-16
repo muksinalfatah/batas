@@ -1,6 +1,7 @@
 import { useMachine } from "@xstate/react"
 import { mapMachine } from "./machine/map.machine"
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { Area } from "./types";
 import { MapGeoJSONFeature, MapRef } from "react-map-gl/maplibre";
 import { calculateBbox } from "./utils/geojson";
 import { IAreaService } from "./types/services";
@@ -40,6 +41,30 @@ export const useMapFunction = (areaService: IAreaService) => {
     const provincesGeoJson = snapshot.context.provinces;
     const regenciesGeoJson = snapshot.context.regencies;
     const hoveredArea = snapshot.context.hoveredArea;
+    const hoverCode = String(hoveredArea?.info?.Kode ?? hoveredArea?.properties?.Kode ?? "");
+    const provinceCode = hoverCode.length === 2 ? hoverCode : "";
+    const [provinceDetail, setProvinceDetail] = useState<{
+        code: string; area?: Area; loading: boolean; error?: string;
+    }>({ code: "", loading: false });
+
+    useEffect(() => {
+        if (!provinceCode || !areaService.getProvinceDetail) return;
+        let active = true;
+        setProvinceDetail({ code: provinceCode, loading: true });
+        const timer = setTimeout(() => {
+            areaService.getProvinceDetail!(provinceCode).then(area => {
+                if (active) setProvinceDetail({ code: provinceCode, area, loading: false });
+            }).catch(() => {
+                if (active) setProvinceDetail({ code: provinceCode, loading: false, error: "Detail provinsi gagal dimuat. Arahkan kembali kursor untuk mencoba lagi." });
+            });
+        }, 150);
+        return () => { active = false; clearTimeout(timer); };
+    }, [areaService, provinceCode]);
+
+    const currentDetail = provinceDetail.code === provinceCode ? provinceDetail : undefined;
+    const enrichedHover = hoveredArea && currentDetail?.area
+        ? { ...hoveredArea, info: { ...hoveredArea.info, ...currentDetail.area } }
+        : hoveredArea;
 
     const showHoverInfo = (feature: MapGeoJSONFeature, x: number, y: number) => {
         if (feature.layer.id === "provinces") {
@@ -66,7 +91,9 @@ export const useMapFunction = (areaService: IAreaService) => {
         isLoading,
         error: snapshot.context.error,
         provincesGeoJson,
-        hoveredArea,
+        hoveredArea: enrichedHover,
+        hoverDetailLoading: Boolean(provinceCode && areaService.getProvinceDetail && (!currentDetail || currentDetail.loading)),
+        hoverDetailError: provinceCode ? currentDetail?.error : undefined,
         regenciesGeoJson,
 
         showHoverInfo,

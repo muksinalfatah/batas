@@ -1,6 +1,7 @@
 import { Area } from ".";
 
 export interface IAreaService {
+    getProvinceDetail?(provinceCode: string): Promise<Area>;
     getProvinces(): Promise<{data: Area[], reference: string}>;
     getProvinceGeoJson(provinceId: string): Promise<GeoJSON.FeatureCollection>;
     getRegencies(provinceCode: string): Promise<{data: Area[], reference: string}>;

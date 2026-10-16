@@ -3,7 +3,7 @@ import { Area } from "../types";
 
 type Props = Area
 
-function AreaDetail({ Kode, Nama, Ibukota, LuasWilayah, JumlahPenduduk, Keterangan, jumlahKab, jumlahKec, jumlahKel }: Props) {
+function AreaDetail({ Kode, Nama, Ibukota, LuasWilayah, JumlahPenduduk, Keterangan, jumlahKab, jumlahKota, jumlahKec, jumlahKel }: Props) {
     const isKab = () => {
         return Kode.length > 2 ? true : false;
     }
@@ -17,7 +17,7 @@ function AreaDetail({ Kode, Nama, Ibukota, LuasWilayah, JumlahPenduduk, Keterang
                     <Group justify='space-between'>
                         <Text size="sm">Luas Wilayah</Text>
                         <Text size="sm">
-                            {LuasWilayah ? <NumberFormatter decimalScale={3} thousandSeparator="." decimalSeparator="," value={LuasWilayah} /> : "-"}
+                            {LuasWilayah != null ? <NumberFormatter decimalScale={3} thousandSeparator="." decimalSeparator="," value={LuasWilayah} /> : "-"}
                         </Text>
                     </Group>
                     <Divider />
@@ -31,42 +31,49 @@ function AreaDetail({ Kode, Nama, Ibukota, LuasWilayah, JumlahPenduduk, Keterang
                     <Group justify='space-between'>
                         <Text size="sm">Ibu Kota</Text>
                         <Text size="sm">
-                            {Ibukota}
+                            {Ibukota || "-"}
                         </Text>
                     </Group>
                     <Divider />
                     <Group justify='space-between'>
                         <Text size="sm">Jumlah Penduduk</Text>
                         <Text size="sm">
-                            {JumlahPenduduk ? <NumberFormatter thousandSeparator value={JumlahPenduduk} /> : "-"}
+                            {JumlahPenduduk != null ? <NumberFormatter thousandSeparator value={JumlahPenduduk} /> : "-"}
                         </Text>
                     </Group>
                     <Divider />
                     <Group justify='space-between'>
                         <Text size="sm">Jumlah Kabupaten</Text>
                         <Text size="sm">
-                            <NumberFormatter thousandSeparator value={jumlahKab} />
+                            {jumlahKab != null ? <NumberFormatter thousandSeparator value={jumlahKab} /> : "-"}
                         </Text>
                     </Group>
                     <Divider />
+                    {jumlahKota != null && <>
+                        <Group justify='space-between'>
+                            <Text size="sm">Jumlah Kota</Text>
+                            <Text size="sm"><NumberFormatter thousandSeparator value={jumlahKota} /></Text>
+                        </Group>
+                        <Divider />
+                    </>}
                     <Group justify='space-between'>
                         <Text size="sm">Jumlah Kecamatan</Text>
                         <Text size="sm">
-                            <NumberFormatter thousandSeparator value={jumlahKec} />
+                            {jumlahKec != null ? <NumberFormatter thousandSeparator value={jumlahKec} /> : "-"}
                         </Text>
                     </Group>
                     <Divider />
                     <Group justify='space-between'>
                         <Text size="sm">Jumlah Kelurahan/Desa</Text>
                         <Text size="sm">
-                            <NumberFormatter thousandSeparator value={jumlahKel} />
+                            {jumlahKel != null ? <NumberFormatter thousandSeparator value={jumlahKel} /> : "-"}
                         </Text>
                     </Group>
                     <Divider />
                     <Group justify='space-between'>
                         <Text size="sm">Keterangan</Text>
                         <Text size="sm">
-                            {Keterangan}
+                            {Keterangan || "-"}
                         </Text>
                     </Group>
                 </Stack>

@@ -18,11 +18,10 @@ export enum MapMode {
 }
 
 function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaService, title?: string, mode?: MapMode }) {
-    const { mapRef, isLoading, error, provincesGeoJson, hoveredArea, regenciesGeoJson, showHoverInfo, clearHover, selectProvince, clearSelected } = useMapFunction(areaService);
+    const { mapRef, isLoading, error, provincesGeoJson, hoveredArea, hoverDetailLoading, hoverDetailError, regenciesGeoJson, showHoverInfo, clearHover, selectProvince, clearSelected } = useMapFunction(areaService);
 
     const onHover = (event: MapLayerMouseEvent) => {
-        const features = mapRef.current?.queryRenderedFeatures(event.point);
-        const hoveredFeature = features && features[0];
+        const hoveredFeature = event.features?.[0];
         const point = event.lngLat;
         if (hoveredFeature) {
             showHoverInfo(hoveredFeature, point.lat, point.lng);
@@ -198,6 +197,8 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                             }}
                         >
                             {renderHoverInfo}
+                            {hoverDetailLoading && <Text size="xs" p="xs">Memuat detail provinsi…</Text>}
+                            {hoverDetailError && <Text size="xs" c="red" p="xs">{hoverDetailError}</Text>}
                         </Popup>
                     )
                 }

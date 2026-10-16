@@ -43,6 +43,7 @@ export type Area = {
     Keterangan:string,
     flagPindah: string,
     jumlahKab?: number,
+    jumlahKota?: number,
     jumlahKec?: number,
     jumlahKel?: number,
 }
