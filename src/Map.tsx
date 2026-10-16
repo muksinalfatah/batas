@@ -1,5 +1,5 @@
 import MapComponent, { Layer, Source, MapLayerMouseEvent, Popup } from 'react-map-gl/maplibre';
-import { DEFAULT_VIEW_STATE } from './const/config';
+import { BOUNDARY_PROVINCE_CODES, DEFAULT_VIEW_STATE } from './const/config';
 import { OSM_MAP } from './utils/openstreet';
 import { useMapFunction } from './useMapFunction';
 import Loader from './components/Loader';
@@ -34,7 +34,10 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
         const clickedFeature = event.features && event.features[0];
         if (clickedFeature) {
             if (clickedFeature.layer.id === "provinces") {
-                selectProvince(clickedFeature.properties["Kode"], clickedFeature);
+                const code = String(clickedFeature.properties["Kode"]);
+                if (mode === MapMode.AREA || BOUNDARY_PROVINCE_CODES.includes(code)) {
+                    selectProvince(code, clickedFeature);
+                }
             }
         } else {
             clearSelected();
@@ -85,7 +88,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                 ref={mapRef}
                 initialViewState={DEFAULT_VIEW_STATE}
                 mapStyle={OSM_MAP}
-                interactiveLayerIds={["provinces", "regencies"]}
+                interactiveLayerIds={mode === MapMode.AREA ? ["provinces", "regencies"] : ["provinces", ...regenciesGeoJson.features.map((_, index) => `${index}-line`)]}
                 onMouseMove={onHover}
                 onClick={onClick}
             >
@@ -104,7 +107,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                                 '#6ac162',
                                 '#6ac162'
                             ],
-                            'fill-opacity': 1,
+                            'fill-opacity': mode === MapMode.AREA ? 1 : 0.1,
                         }}
                     />
                     <Layer id="provinces-line" type="line" paint={{

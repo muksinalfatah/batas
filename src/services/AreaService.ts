@@ -285,101 +285,16 @@ export class AreaCodeService implements IAreaService {
 
 }
 
-class AreaBoundaryService implements IAreaService {
-
-    BASE_URL = import.meta.env.VITE_AREA_SERVICE_BASE_URL as string;
-
-    token: string | null = null;
-
-    private async authenticate() {
-        const response = await fetch(`${this.BASE_URL}kode-wap/token`, {
-            headers: {
-                TimeStamp: '2026-10-16T07:20:00Z',
-                PartnerKey: 'FHbW102IyYqVspOqVaRKfAxZeHL1v7anE+ReWov/a1o=',
-                PartnerName: 'adwilapi'
-            }
-        });
-        const data = await response.json();
-        this.token = data.token;
-    }
-
-    async getProvinces(): Promise<{ data: Area[]; reference: string; }> {
-        if (!this.token) {
-            await this.authenticate();
-        }
-
-        const response = await fetch(`${this.BASE_URL}api/KodeWilayah/Provinsi`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${this.token}`
-            }
-        });
-
-        if (response.status === 401) {
-            await this.authenticate();
-            return this.getProvinces();
-        }
-
-        const body = await response.json();
-
-        const areas: Area[] = body.data.map((area: any) => ({
-            ...area,
-            flagPindah: area.flagPindah ?? "0",
-        }))
-
-
-        return {
-            data: areas,
-            reference: ""
-        };
-    }
-
-    async getProvinceGeoJson(provinceCode: string): Promise<GeoJSON.FeatureCollection> {
-        return fetch(`${KODE_WILAYAH_GEO_JSON_BASE_URL}/provinces/${provinceCode}.json`)
-            .then(res => res.json());
-    }
-
-    async getRegencies(provinceCode: string): Promise<{ data: Area[]; reference: string; }> {
-        if (!this.token) {
-            await this.authenticate();
-        }
-
-        const response = await fetch(`${this.BASE_URL}api/KodeWilayah/Kabupaten`, {
-            method: "POST",
-            body: JSON.stringify({ KodeWilayah: provinceCode }),
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${this.token}`
-            }
-        });
-
-        if (response.status === 401) {
-            await this.authenticate();
-            return this.getProvinces();
-        }
-
-        const body = await response.json();
-
-        const areas: Area[] = body.data.map((area: any) => ({
-            ...area,
-            Kode: area.KodeWilayah,
-            flagPindah: area.flagPindah ?? "0",
-        }))
-
-        return {
-            data: areas,
-            reference: ""
-        };
-    }
-
+class AreaBoundaryService extends KodeWilayah {
     async getRegenciesGeoJson(provinceCode: string): Promise<GeoJSON.FeatureCollection> {
         const response = await fetch(`${import.meta.env.BASE_URL}geojson/batas/${provinceCode}.geojson`);
         if (!response.ok) throw new Error(`GeoJSON batas ${provinceCode}: HTTP ${response.status}`);
         const geojson = await response.json();
+        if (geojson?.type !== "FeatureCollection" || !Array.isArray(geojson.features)) {
+            throw new Error("Data GeoJSON batas tidak valid");
+        }
         return geojson;
-        
     }
-
 }
 
 export class AreaServiceFactory {
