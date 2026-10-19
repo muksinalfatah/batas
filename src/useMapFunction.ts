@@ -6,8 +6,24 @@ import { MapGeoJSONFeature, MapRef } from "react-map-gl/maplibre";
 import { calculateBbox } from "./utils/geojson";
 import { IAreaService } from "./types/services";
 import { DEFAULT_VIEW_STATE } from "./const/config";
+import type { IslandGroup } from "./const/islands";
 
-export const useMapFunction = (areaService: IAreaService) => {
+function focusIsland(map: MapRef | null, provinces: GeoJSON.FeatureCollection, island: IslandGroup | null) {
+    if (!map) return;
+    if (!island) {
+        map.flyTo({ center: [DEFAULT_VIEW_STATE.longitude, DEFAULT_VIEW_STATE.latitude], zoom: DEFAULT_VIEW_STATE.zoom });
+        return;
+    }
+    const features = provinces.features.filter(feature => island.provinceCodes.includes(String(feature.properties?.Kode)));
+    if (!features.length) return;
+    const bounds = calculateBbox({ type: 'FeatureCollection', features });
+    if (!bounds.every(Number.isFinite)) return;
+    map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 36, maxZoom: 7, duration: 900 });
+}
+
+export const useMapFunction = (areaService: IAreaService, selectedIsland: IslandGroup | null = null) => {
+    const mapRef = useRef<MapRef>(null);
+    const [mapReady, setMapReady] = useState(false);
     const [snapshot, send] = useMachine(mapMachine.provide({
         actions: {
             moveTo: ({ event }) => {
@@ -20,14 +36,8 @@ export const useMapFunction = (areaService: IAreaService) => {
                     ])
                 }
             },
-            resetMap: () => {
-                mapRef.current?.flyTo({
-                    center: {
-                        lat: DEFAULT_VIEW_STATE.latitude,
-                        lng: DEFAULT_VIEW_STATE.longitude
-                    },
-                    zoom: DEFAULT_VIEW_STATE.zoom
-                })
+            resetMap: ({ context }) => {
+                focusIsland(mapRef.current, context.provinces, selectedIsland);
             }
         },
     }), {
@@ -35,10 +45,14 @@ export const useMapFunction = (areaService: IAreaService) => {
     });
 
 
-    const mapRef = useRef<MapRef>(null);
-
     const isLoading = snapshot.matches("initialLoading") || snapshot.matches({ provincesLoaded: "regenciesLoading" });
     const provincesGeoJson = snapshot.context.provinces;
+    useEffect(() => {
+        if (!mapReady || !provincesGeoJson.features.length) return;
+        // Leaving the regency state also cancels any pending regency request.
+        send({ type: 'CLEAR_HOVER' });
+        send({ type: 'CLEAR_SELECTED' });
+    }, [selectedIsland, provincesGeoJson, mapReady, send]);
     const regenciesGeoJson = snapshot.context.regencies;
     const hoveredArea = snapshot.context.hoveredArea;
     const hoverCode = String(hoveredArea?.info?.Kode ?? hoveredArea?.properties?.Kode ?? "").trim();
@@ -91,6 +105,7 @@ export const useMapFunction = (areaService: IAreaService) => {
 
     return {
         mapRef,
+        onMapLoad: () => setMapReady(true),
         isLoading,
         error: snapshot.context.error,
         provincesGeoJson,

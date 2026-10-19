@@ -106,7 +106,8 @@ export const mapMachine = setup({
         }),
         clearSelected: assign({
             regencies: turf.featureCollection([]),
-            selectedProvinceCode: null
+            selectedProvinceCode: null,
+            error: null,
         })
     }
 }).createMachine({

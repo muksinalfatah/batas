@@ -11,14 +11,18 @@ import { Alert, Box, Group, Stack, Text, Title } from '@mantine/core';
 import { pointOnFeature } from "@turf/point-on-feature";
 import PropertiesDetail from './components/PropertiesDetail';
 import { useMemo } from 'react';
+import type { ExpressionSpecification } from 'maplibre-gl';
+import type { IslandGroup } from './const/islands';
 
 export enum MapMode {
     AREA,
     LINE
 }
 
-function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaService, title?: string, mode?: MapMode }) {
-    const { mapRef, isLoading, error, provincesGeoJson, hoveredArea, hoverDetailLoading, hoverDetailError, regenciesGeoJson, selectedProvinceCode, showHoverInfo, clearHover, selectProvince, clearSelected } = useMapFunction(areaService);
+function Map({ areaService, title, mode = MapMode.AREA, selectedIsland = null }: { areaService: IAreaService, title?: string, mode?: MapMode, selectedIsland?: IslandGroup | null }) {
+    const { mapRef, onMapLoad, isLoading, error, provincesGeoJson, hoveredArea, hoverDetailLoading, hoverDetailError, regenciesGeoJson, selectedProvinceCode, showHoverInfo, clearHover, selectProvince, clearSelected } = useMapFunction(areaService, selectedIsland);
+    const islandMembership: ExpressionSpecification = ['in', ['to-string', ['get', 'Kode']], ['literal', selectedIsland?.provinceCodes ?? []]];
+    const belongsToIsland = (feature: { properties: GeoJSON.GeoJsonProperties }) => !selectedIsland || selectedIsland.provinceCodes.includes(String(feature.properties?.Kode));
     const showBoundaryOverlay = mode === MapMode.AREA && selectedProvinceCode !== null
         && BOUNDARY_PROVINCE_CODES.includes(selectedProvinceCode);
 
@@ -26,7 +30,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
         const hoveredFeature = event.features?.find(feature => feature.layer.id === "area-boundaries-hit")
             ?? event.features?.[0];
         const point = event.lngLat;
-        if (hoveredFeature) {
+        if (hoveredFeature && (hoveredFeature.layer.id !== 'provinces' || belongsToIsland(hoveredFeature))) {
             showHoverInfo(hoveredFeature, point.lat, point.lng);
         } else {
             clearHover();
@@ -37,6 +41,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
         const clickedFeature = event.features?.find(feature => feature.layer.id === "regencies" || feature.layer.id === "provinces");
         if (clickedFeature) {
             if (clickedFeature.layer.id === "provinces") {
+                if (!belongsToIsland(clickedFeature)) return;
                 const code = String(clickedFeature.properties["Kode"]);
                 if (mode === MapMode.AREA || BOUNDARY_PROVINCE_CODES.includes(code)) {
                     selectProvince(code, clickedFeature);
@@ -96,6 +101,7 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                     : ["provinces", ...regenciesGeoJson.features.map((_, index) => `${index}-line`)]}
                 onMouseMove={onHover}
                 onClick={onClick}
+                onLoad={onMapLoad}
             >
                 {isLoading && <Loader />}
                 <Source type="geojson" data={provincesGeoJson}>
@@ -112,19 +118,26 @@ function Map({ areaService, title, mode = MapMode.AREA }: { areaService: IAreaSe
                                 '#6ac162',
                                 '#6ac162'
                             ],
-                            'fill-opacity': mode === MapMode.AREA ? 1 : 0.1,
+                            'fill-opacity': selectedIsland ? ['case', islandMembership, mode === MapMode.AREA ? 1 : 0.3, 0.08] : mode === MapMode.AREA ? 1 : 0.1,
                         }}
                     />
                     <Layer id="provinces-line" type="line" paint={{
                         "line-color": "yellow",
-                        "line-width": 2
+                        "line-width": 2,
+                        "line-opacity": selectedIsland ? ['case', islandMembership, 1, 0.12] : 1,
                     }} />
+                    {selectedIsland && <Layer id="island-highlight" type="line" paint={{
+                        'line-color': selectedIsland.color,
+                        'line-width': 3,
+                        'line-opacity': ['case', islandMembership, 1, 0],
+                    }} />}
                 </Source>
 
                 <Source type='geojson' data={provinceLabelPoints}>
                     <Layer
                         id='province-label'
                         type='symbol'
+                        paint={{ 'text-opacity': selectedIsland ? ['case', islandMembership, 1, 0.15] : 1 }}
                         layout={{
                             "text-field": ["get", "name"],
                             "text-font": ["sans700"],
