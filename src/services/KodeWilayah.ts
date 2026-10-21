@@ -1,10 +1,64 @@
 import { getLocalProvinces, getLocalRegencies, readLocalGeoJson } from "./localGeoJson";
 import { Area } from "../types";
-import { IAreaService } from "../types/services";
+import { AreaSummary, IAreaService, IslandRegencySummary } from "../types/services";
 import { createPartnerHeaders } from "./partnerAuth";
 
 export class KodeWilayah implements IAreaService {
     private areaDetails = new Map<string, Promise<Area>>();
+
+    async getIslandRegencySummary(): Promise<IslandRegencySummary[]> {
+        if (!this.token) await this.authenticate();
+        const fetchSummary = () => fetch(`${this.BASE_URL}kode-wap/summary/kabupaten-kota/2.0.0`, {
+            signal: AbortSignal.timeout(5000),
+            headers: { Authorization: `Bearer ${this.token}` },
+        });
+        let response = await fetchSummary();
+        if (response.status === 401) {
+            this.token = null;
+            await this.authenticate();
+            response = await fetchSummary();
+        }
+        if (!response.ok) throw new Error(`Ringkasan per pulau: HTTP ${response.status}`);
+        const body = await response.json();
+        if (String(body.code) !== '200' || !Array.isArray(body.data) || body.data.length === 0) {
+            throw new Error("Ringkasan per pulau tidak valid");
+        }
+        return body.data.map((item: IslandRegencySummary) => {
+            const value = item?.JumlahKabupatenKota;
+            if (typeof item?.Kelompok !== 'string' || !item.Kelompok.trim()
+                || (typeof value !== 'number' && typeof value !== 'string') || String(value).trim() === ''
+                || !Number.isSafeInteger(Number(value)) || Number(value) < 0) {
+                throw new Error("Ringkasan per pulau tidak valid");
+            }
+            return { Kelompok: item.Kelompok.trim(), JumlahKabupatenKota: Number(value) };
+        });
+    }
+
+    async getSummary(): Promise<AreaSummary> {
+        if (!this.token) await this.authenticate();
+        const fetchSummary = () => fetch(`${this.BASE_URL}kode-wap/summary/2.0.0`, {
+            signal: AbortSignal.timeout(5000),
+            headers: { Authorization: `Bearer ${this.token}` },
+        });
+        let response = await fetchSummary();
+        if (response.status === 401) {
+            this.token = null;
+            await this.authenticate();
+            response = await fetchSummary();
+        }
+        if (!response.ok) throw new Error(`Ringkasan wilayah: HTTP ${response.status}`);
+        const body = await response.json();
+        const fields = ['JumlahProvinsi', 'JumlahKabupatenKota', 'JumlahKecamatan', 'JumlahDesaKelurahan', 'JumlahPulau'] as const;
+        const summary = {} as AreaSummary;
+        for (const field of fields) {
+            const value = body.data?.[field];
+            if ((typeof value !== 'number' && typeof value !== 'string') || String(value).trim() === '' || !Number.isSafeInteger(Number(value)) || Number(value) < 0) {
+                throw new Error(`Ringkasan wilayah tidak valid: ${field}`);
+            }
+            summary[field] = Number(value);
+        }
+        return summary;
+    }
 
     getProvinceDetail(provinceCode: string): Promise<Area> {
         return this.getAreaDetail(provinceCode);

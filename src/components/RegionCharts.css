@@ -1,0 +1,15 @@
+.region-composition { padding: 8px 22px 22px; }
+.region-donut { display: block; width: min(100%, 220px); margin: 0 auto; }
+.region-donut-total { fill: var(--ink); font-size: 23px; font-weight: 800; letter-spacing: -.6px; }
+.region-chart-caption { fill: var(--muted); font-size: 11px; font-weight: 500; }
+.region-legend { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.region-legend li { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+.region-legend strong { margin-left: auto; color: var(--ink); font-variant-numeric: tabular-nums; }
+.region-legend-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.region-levels { display: flex; align-items: center; min-height: 328px; padding: 12px 12px 22px; }
+.region-levels svg { display: block; width: 100%; overflow: visible; }
+.region-bar-value { fill: var(--ink); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .region-composition { padding: 8px 16px 22px; }
+  .region-levels { min-height: 260px; }
+}

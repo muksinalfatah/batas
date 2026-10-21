@@ -52,7 +52,8 @@ function Map({ areaService, title, mode = MapMode.AREA, selectedIsland = null }:
         }
     }
 
-    const provinceLabelPoints = turf.featureCollection(provincesGeoJson.features.map((feature) => {
+    // GeoJSON may contain features with null geometry; they have no label position.
+    const provinceLabelPoints = turf.featureCollection(provincesGeoJson.features.filter(feature => feature.geometry !== null).map((feature) => {
         const geoPoints = turf.centroid(feature);
 
         geoPoints.properties = {
@@ -63,7 +64,7 @@ function Map({ areaService, title, mode = MapMode.AREA, selectedIsland = null }:
         return geoPoints;
     }))
 
-    const regencyLabelPoints = turf.featureCollection(regenciesGeoJson.features.map((feature) => {
+    const regencyLabelPoints = turf.featureCollection(regenciesGeoJson.features.filter(feature => feature.geometry !== null).map((feature) => {
         const geoPoints = mode === MapMode.AREA ? turf.centroid(feature) : pointOnFeature(feature);
 
         geoPoints.properties = {
